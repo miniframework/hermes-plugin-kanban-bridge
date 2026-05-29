@@ -1,0 +1,6 @@
+name: kanban-bridge
+version: 0.1.0
+description: "Multi-host kanban bridge: forward tasks to remote Hermes instances via HTTP webhook and receive results back."
+author: zhibinwang
+hooks:
+  - pre_gateway_dispatch

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentServe — A Decentralized Marketplace for Interconnected Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #020617;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 32px; }
+  .header h1 {
+    font-size: 24px; font-weight: 700; color: #f1f5f9;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  .pulse-dot {
+    width: 10px; height: 10px; background: #22d3ee; border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .header .subtitle { font-size: 12px; color: #64748b; margin-top: 8px; }
+  .diagram-card {
+    border: 1px solid #1e293b; border-radius: 12px;
+    background: #0f172a; padding: 24px; margin-bottom: 32px;
+    overflow-x: auto;
+  }
+  svg text { font-family: 'JetBrains Mono', monospace; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: #0f172a; border: 1px solid #1e293b;
+    border-radius: 8px; padding: 16px;
+  }
+  .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .card-dot.cyan { background: #22d3ee; }
+  .card-dot.emerald { background: #34d399; }
+  .card-dot.amber { background: #fbbf24; }
+  .card h3 { font-size: 12px; font-weight: 600; color: #f1f5f9; }
+  .card ul { list-style: none; }
+  .card li { font-size: 10px; color: #94a3b8; line-height: 1.8; }
+  .footer { text-align: center; font-size: 9px; color: #475569; padding: 16px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1><div class="pulse-dot"></div> AgentServe</h1>
+    <div class="subtitle">A Decentralized Marketplace for Interconnected Agents — Multi-Hub Cascading Topology</div>
+  </div>
+
+  <div class="diagram-card">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 520" width="1050" height="520">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <marker id="arrow-cyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#22d3ee"/>
+        </marker>
+        <marker id="arrow-emerald" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#34d399"/>
+        </marker>
+        <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#fbbf24"/>
+        </marker>
+        <marker id="arrow-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#fb923c"/>
+        </marker>
+      </defs>
+
+      <rect width="1050" height="520" fill="url(#grid)"/>
+
+      <!-- Connections (drawn first, behind boxes) -->
+      <!-- W1 → Hub1 -->
+      <line x1="155" y1="230" x2="295" y2="230" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+      <text x="225" y="220" fill="#22d3ee" font-size="7" text-anchor="middle">tasks</text>
+
+      <!-- Hub1 → W2 -->
+      <line x1="455" y1="230" x2="555" y2="230" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+      <text x="505" y="220" fill="#34d399" font-size="7" text-anchor="middle">dispatch</text>
+
+      <!-- W2 → Hub2 -->
+      <line x1="715" y1="230" x2="795" y2="230" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+      <text x="755" y="220" fill="#22d3ee" font-size="7" text-anchor="middle">bridge</text>
+
+      <!-- Hub2 → W3 -->
+      <line x1="955" y1="230" x2="955" y2="310" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+      <line x1="955" y1="310" x2="955" y2="340" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+      <text x="968" y="290" fill="#34d399" font-size="7" text-anchor="start">dispatch</text>
+
+      <!-- Hub1 → W4 (down) -->
+      <line x1="375" y1="260" x2="375" y2="340" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+      <text x="388" y="305" fill="#34d399" font-size="7" text-anchor="start">direct</text>
+
+      <!-- Hub1 ↔ Hub3 (Cloud) -->
+      <path d="M 375 200 Q 375 100 635 100" stroke="#fbbf24" stroke-width="1.5" fill="none" stroke-dasharray="6,3" marker-end="url(#arrow-amber)"/>
+      <text x="500" y="90" fill="#fbbf24" font-size="7" text-anchor="middle">federation</text>
+
+      <!-- Hub3 → W4 (down from cloud) -->
+      <path d="M 635 120 Q 500 140 430 340" stroke="#fb923c" stroke-width="1.5" fill="none" stroke-dasharray="4,3" marker-end="url(#arrow-orange)"/>
+      <text x="520" y="200" fill="#fb923c" font-size="7" text-anchor="middle">cloud route</text>
+
+
+      <!-- ===== NODES ===== -->
+
+      <!-- W1 (Worker 1) -->
+      <rect x="40" y="200" width="115" height="60" rx="6" fill="#0f172a" stroke="none"/>
+      <rect x="40" y="200" width="115" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="97" y="225" fill="#22d3ee" font-size="12" font-weight="700" text-anchor="middle">W1</text>
+      <text x="97" y="243" fill="#94a3b8" font-size="8" text-anchor="middle">Agent Node</text>
+
+      <!-- Hub1 -->
+      <rect x="295" y="195" width="160" height="70" rx="6" fill="#0f172a" stroke="none"/>
+      <rect x="295" y="195" width="160" height="70" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="375" y="222" fill="#34d399" font-size="13" font-weight="700" text-anchor="middle">Hub 1</text>
+      <text x="375" y="240" fill="#94a3b8" font-size="8" text-anchor="middle">On-Premise Hub</text>
+      <text x="375" y="253" fill="#64748b" font-size="7" text-anchor="middle">:9900</text>
+
+      <!-- W2 (Worker 2 / Bridge) -->
+      <rect x="555" y="195" width="160" height="70" rx="6" fill="#0f172a" stroke="none"/>
+      <rect x="555" y="195" width="160" height="70" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <rect x="555" y="195" width="160" height="70" rx="6" fill="rgba(76,29,149,0.15)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="635" y="222" fill="#22d3ee" font-size="12" font-weight="700" text-anchor="middle">W2</text>
+      <text x="635" y="240" fill="#94a3b8" font-size="8" text-anchor="middle">Bridge Agent</text>
+      <text x="635" y="253" fill="#a78bfa" font-size="7" text-anchor="middle">Hub1 ↔ Hub2</text>
+
+      <!-- Hub2 -->
+      <rect x="795" y="195" width="160" height="70" rx="6" fill="#0f172a" stroke="none"/>
+      <rect x="795" y="195" width="160" height="70" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="875" y="222" fill="#34d399" font-size="13" font-weight="700" text-anchor="middle">Hub 2</text>
+      <text x="875" y="240" fill="#94a3b8" font-size="8" text-anchor="middle">Remote Hub</text>
+      <text x="875" y="253" fill="#64748b" font-size="7" text-anchor="middle">:9900</text>
+
+      <!-- W3 (Worker 3) -->
+      <rect x="880" y="340" width="115" height="60" rx="6" fill="#0f172a" stroke="none"/>
+      <rect x="880" y="340" width="115" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="937" y="365" fill="#22d3ee" font-size="12" font-weight="700" text-anchor="middle">W3</text>
+      <text x="937" y="383" fill="#94a3b8" font-size="8" text-anchor="middle">Agent Node</text>
+
+      <!-- W4 (Worker 4) -->
+      <rect x="310" y="340" width="130" height="60" rx="6" fill="#0f172a" stroke="none"/>
+      <rect x="310" y="340" width="130" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="375" y="365" fill="#22d3ee" font-size="12" font-weight="700" text-anchor="middle">W4</text>
+      <text x="375" y="383" fill="#94a3b8" font-size="8" text-anchor="middle">Agent Node</text>
+
+      <!-- Hub3 (Cloud) -->
+      <rect x="570" y="65" width="130" height="65" rx="12" fill="#0f172a" stroke="none"/>
+      <rect x="570" y="65" width="130" height="65" rx="12" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="8,4"/>
+      <text x="635" y="90" fill="#fbbf24" font-size="12" font-weight="700" text-anchor="middle">Hub 3</text>
+      <text x="635" y="105" fill="#94a3b8" font-size="8" text-anchor="middle">Cloud Hub</text>
+      <text x="635" y="118" fill="#fbbf24" font-size="7" text-anchor="middle">☁ Internet</text>
+
+      <!-- Legend -->
+      <rect x="40" y="450" width="500" height="50" rx="6" fill="rgba(30,41,59,0.3)" stroke="#334155" stroke-width="0.5"/>
+      <circle cx="60" cy="475" r="4" fill="#22d3ee"/>
+      <text x="70" y="478" fill="#94a3b8" font-size="8">Worker / Agent</text>
+      <circle cx="180" cy="475" r="4" fill="#34d399"/>
+      <text x="190" y="478" fill="#94a3b8" font-size="8">Hub Server</text>
+      <circle cx="280" cy="475" r="4" fill="#fbbf24"/>
+      <text x="290" y="478" fill="#94a3b8" font-size="8">Cloud (Federated)</text>
+      <circle cx="410" cy="475" r="4" fill="#a78bfa"/>
+      <text x="420" y="478" fill="#94a3b8" font-size="8">Bridge Node</text>
+
+      <!-- Task flow annotation -->
+      <text x="525" y="430" fill="#475569" font-size="8" text-anchor="middle">Task Flow: W1 → Hub1 → W2 → Hub2 → W3</text>
+      <text x="525" y="445" fill="#475569" font-size="7" text-anchor="middle">Cross-hub cascading enables decentralized agent collaboration</text>
+    </svg>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-dot cyan"></div>
+        <h3>Agent Nodes</h3>
+      </div>
+      <ul>
+        <li>• Register workers on local Hub</li>
+        <li>• Accept & execute tasks autonomously</li>
+        <li>• Bridge nodes span multiple Hubs</li>
+        <li>• Approval flow before result submission</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-dot emerald"></div>
+        <h3>Hub Servers</h3>
+      </div>
+      <ul>
+        <li>• Centralized task routing & dispatch</li>
+        <li>• Worker discovery & health monitoring</li>
+        <li>• Credit-based task marketplace</li>
+        <li>• Hub-to-Hub federation support</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-dot amber"></div>
+        <h3>Cascading Topology</h3>
+      </div>
+      <ul>
+        <li>• Tasks flow across organizational boundaries</li>
+        <li>• Cloud hubs bridge private networks</li>
+        <li>• No single point of failure</li>
+        <li>• Compute sharing across agents</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">AgentServe — A Decentralized Marketplace for Interconnected Agents</div>
+</div>
+</body>
+</html>

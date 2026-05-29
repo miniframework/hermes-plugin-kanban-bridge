@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register — Kanban Hub</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+         background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  .container { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; width: 380px; }
+  h1 { font-size: 24px; text-align: center; margin-bottom: 8px; }
+  .subtitle { color: var(--muted); text-align: center; font-size: 14px; margin-bottom: 24px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; margin-top: 16px; }
+  input { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+          color: var(--text); font-size: 14px; outline: none; }
+  input:focus { border-color: var(--accent); }
+  button { width: 100%; padding: 10px; margin-top: 24px; background: var(--accent); color: #fff; border: none;
+           border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  button:hover { opacity: 0.9; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error { color: var(--red); font-size: 13px; margin-top: 12px; text-align: center; display: none; }
+  .link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
+  .link a { color: var(--accent); text-decoration: none; }
+  .link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>&#x2695; Kanban Hub</h1>
+  <p class="subtitle">Create a new account</p>
+  <form id="regForm" onsubmit="return doRegister(event)">
+    <label for="email">Email</label>
+    <input type="email" id="email" required autofocus placeholder="you@example.com">
+    <label for="password">Password</label>
+    <input type="password" id="password" required placeholder="At least 6 characters" minlength="6">
+    <label for="password2">Confirm Password</label>
+    <input type="password" id="password2" required placeholder="Repeat password" minlength="6">
+    <div class="error" id="error"></div>
+    <button type="submit" id="btn">Create Account</button>
+  </form>
+  <p class="link">Already have an account? <a href="/login">Sign In</a></p>
+</div>
+<script>
+async function doRegister(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('error');
+  const btn = document.getElementById('btn');
+  const pw = document.getElementById('password').value;
+  const pw2 = document.getElementById('password2').value;
+  errEl.style.display = 'none';
+  if (pw !== pw2) {
+    errEl.textContent = 'Passwords do not match';
+    errEl.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: document.getElementById('email').value,
+        password: pw
+      })
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      throw new Error(d.description || 'Registration failed');
+    }
+    window.location.href = '/';
+  } catch(err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+  }
+}
+</script>
+</body>
+</html>

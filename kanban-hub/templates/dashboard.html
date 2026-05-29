@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanban Hub Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --yellow: #d29922; --red: #f85149; --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+         background: var(--bg); color: var(--text); padding: 24px; }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card .value { font-size: 32px; font-weight: 600; margin-top: 4px; }
+  .card .value.green { color: var(--green); }
+  .card .value.yellow { color: var(--yellow); }
+  .card .value.red { color: var(--red); }
+  .card .value.accent { color: var(--accent); }
+  .card .value.purple { color: var(--purple); }
+  h2 { font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .section { margin-bottom: 32px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  th { background: #1c2128; text-align: left; padding: 10px 14px; font-size: 12px; text-transform: uppercase;
+       letter-spacing: 0.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #1c2128; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+  .badge-online { background: #0d3321; color: var(--green); }
+  .badge-offline { background: #3d1a1e; color: var(--red); }
+  .badge-blocked { background: #2a1f00; color: var(--yellow); }
+  .badge-pending { background: #2a1f00; color: var(--yellow); }
+  .badge-running { background: #0c2d6b; color: var(--accent); }
+  .badge-completed { background: #0d3321; color: var(--green); }
+  .badge-failed { background: #3d1a1e; color: var(--red); }
+  .badge-acked { background: #2a1638; color: var(--purple); }
+  .bar-bg { background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .refresh-note { color: var(--muted); font-size: 12px; text-align: right; margin-bottom: 16px; }
+  .empty { color: var(--muted); font-style: italic; padding: 20px; text-align: center; }
+  .desc-cell { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  .topbar-left h1 { margin-bottom:4px; }
+  .topbar-right { display:flex; align-items:center; gap:12px; font-size:14px; }
+  .topbar-right .email { color:var(--muted); }
+  .topbar-right .credits { color:var(--green); font-weight:600; }
+  .btn { cursor:pointer; padding:4px 12px; border:1px solid var(--border); border-radius:4px; background:var(--surface); color:var(--text); font-size:13px; }
+  .btn:hover { background:#1c2128; }
+  .btn-accent { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .btn-accent:hover { opacity:0.9; }
+  .buy-modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:200; justify-content:center; align-items:center; }
+  .buy-modal-overlay.active { display:flex; }
+  .buy-modal { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:24px; width:320px; }
+  .buy-modal h3 { margin-bottom:16px; font-size:16px; }
+  .buy-modal label { display:block; color:var(--muted); font-size:13px; margin-bottom:4px; }
+  .buy-modal input { width:100%; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:14px; outline:none; margin-bottom:16px; }
+  .buy-modal input:focus { border-color:var(--accent); }
+  .buy-modal .buy-btns { display:flex; gap:8px; justify-content:flex-end; }
+  .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; justify-content:center; align-items:center; }
+  .modal-overlay.active { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; max-width:700px; width:90%; max-height:80vh; overflow:auto; position:relative; }
+  .modal-close { position:absolute; top:10px; right:14px; background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+  .modal-close:hover { color:var(--text); }
+  .modal pre { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:14px; font-size:13px; overflow-x:auto; white-space:pre-wrap; word-break:break-all; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>&#x2695; Kanban Hub</h1>
+    <p class="subtitle" id="subtitle">Loading...</p>
+  </div>
+  <div class="topbar-right">
+    <span class="email" id="userEmail"></span>
+    <span class="credits" id="userCredits"></span>
+    <button class="btn" onclick="showToken()" id="tokenBtn">Show Token</button>
+    <button class="btn btn-accent" onclick="openBuyModal()">Buy Credits</button>
+    <button class="btn" onclick="refresh()">&#x21bb; Refresh</button>
+    <button class="btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="grid" id="stats"></div>
+
+<div class="section">
+  <h2>Nodes</h2>
+  <div id="nodes-table"></div>
+</div>
+
+<div class="section">
+  <h2>Workers</h2>
+  <div id="workers-table"></div>
+</div>
+
+<div class="section">
+  <h2>Tasks</h2>
+  <div id="tasks-table"></div>
+</div>
+
+<div class="modal-overlay" id="taskModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2 style="margin-bottom:12px">Task Detail</h2>
+    <pre id="taskJson">Loading...</pre>
+  </div>
+</div>
+
+<div class="buy-modal-overlay" id="buyModal" onclick="if(event.target===this)closeBuyModal()">
+  <div class="buy-modal">
+    <h3>Buy Credits</h3>
+    <label>Amount</label>
+    <input type="number" id="buyAmount" min="100" step="100" value="1000" placeholder="1000">
+    <div class="buy-btns">
+      <button class="btn" onclick="closeBuyModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="doBuy()">Purchase</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_KEY = '';
+
+async function api(path) {
+  const headers = {};
+  if (API_KEY) headers['X-Hub-Key'] = API_KEY;
+  const r = await fetch(path, { headers });
+  return r.json();
+}
+
+function badge(text) {
+  const cls = {
+    online:'badge-online', offline:'badge-offline',
+    pending:'badge-pending', running:'badge-running', blocked:'badge-blocked',
+    completed:'badge-completed', failed:'badge-failed', acked:'badge-acked'
+  }[text] || 'badge-pending';
+  return `<span class="badge ${cls}">${text}</span>`;
+}
+
+function ts(epoch) {
+  if (!epoch) return '-';
+  const d = new Date(epoch * 1000);
+  return d.toLocaleString();
+}
+
+function ago(epoch) {
+  if (!epoch) return '-';
+  const s = Math.floor(Date.now()/1000) - epoch;
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+
+async function showTask(id) {
+  document.getElementById('taskModal').classList.add('active');
+  document.getElementById('taskJson').textContent = 'Loading...';
+  try {
+    const task = await api('/api/dashboard/tasks/' + id);
+    task.credits_cost = _workerCostMap[task.target_node + ':' + task.target_worker] ?? '?';
+    document.getElementById('taskJson').textContent = JSON.stringify(task, null, 2);
+  } catch(e) {
+    document.getElementById('taskJson').textContent = 'Error: ' + e.message;
+  }
+}
+function closeModal() { document.getElementById('taskModal').classList.remove('active'); }
+
+async function refresh() {
+  try {
+    const [nodes, workers, tasks] = await Promise.all([
+      api('/api/dashboard/nodes'),
+      api('/api/dashboard/workers'),
+      api('/api/dashboard/tasks'),
+    ]);
+
+    const taskCounts = { pending:0, running:0, completed:0, failed:0, acked:0 };
+    tasks.forEach(t => { taskCounts[t.status] = (taskCounts[t.status]||0) + 1; });
+
+    document.getElementById('subtitle').textContent =
+      `${nodes.length} node(s), ${workers.length} worker(s), ${tasks.length} task(s)`;
+
+    document.getElementById('stats').innerHTML = `
+      <div class="card"><div class="label">Nodes Online</div>
+        <div class="value green">${nodes.filter(n=>n.status==='online').length}</div></div>
+      <div class="card"><div class="label">Workers</div>
+        <div class="value accent">${workers.length}</div></div>
+      <div class="card"><div class="label">Pending</div>
+        <div class="value yellow">${taskCounts.pending}</div></div>
+      <div class="card"><div class="label">Running</div>
+        <div class="value accent">${taskCounts.running}</div></div>
+      <div class="card"><div class="label">Completed</div>
+        <div class="value green">${taskCounts.completed}</div></div>
+      <div class="card"><div class="label">Failed</div>
+        <div class="value red">${taskCounts.failed}</div></div>
+    `;
+
+    if (nodes.length === 0) {
+      document.getElementById('nodes-table').innerHTML = '<div class="empty">No nodes registered</div>';
+    } else {
+      document.getElementById('nodes-table').innerHTML = `<table>
+        <tr><th>Name</th><th>Status</th><th>Last Heartbeat</th><th>Created</th></tr>
+        ${nodes.map(n => `<tr>
+          <td><strong>${n.name}</strong></td>
+          <td>${badge(n.status)}</td>
+          <td>${ago(n.last_heartbeat)}</td>
+          <td>${ts(n.created_at)}</td>
+        </tr>`).join('')}
+      </table>`;
+    }
+
+    if (workers.length === 0) {
+      document.getElementById('workers-table').innerHTML = '<div class="empty">No workers shared</div>';
+    } else {
+      document.getElementById('workers-table').innerHTML = `<table>
+        <tr><th>Node</th><th>Profile</th><th>Load</th><th>Capacity</th><th>Credits/Task</th><th>Description</th></tr>
+        ${workers.map(w => {
+          const pct = w.max_concurrent > 0 ? Math.round(w.active_tasks / w.max_concurrent * 100) : 0;
+          const color = pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--yellow)' : 'var(--green)';
+          const desc = (w.description||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          return `<tr>
+            <td>${w.node_name}</td>
+            <td><strong>${w.profile_name}</strong></td>
+            <td style="min-width:100px">
+              <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+            </td>
+            <td>${w.active_tasks}/${w.max_concurrent}</td>
+            <td style="color:var(--yellow);font-weight:600">${w.credits_per_task ?? 100}</td>
+            <td class="desc-cell" title="${desc.replace(/"/g,'&quot;')}">${desc.length > 200 ? desc.substring(0,200) + '…' : (desc || '-')}</td>
+          </tr>`;
+        }).join('')}
+      </table>`;
+    }
+
+    const workerCostMap = {};
+    workers.forEach(w => { workerCostMap[w.node_name + ':' + w.profile_name] = w.credits_per_task ?? 100; });
+    _workerCostMap = workerCostMap;
+
+    if (tasks.length === 0) {
+      document.getElementById('tasks-table').innerHTML = '<div class="empty">No tasks</div>';
+    } else {
+      document.getElementById('tasks-table').innerHTML = `<table>
+        <tr><th>ID</th><th>Status</th><th>Origin</th><th>Target</th><th>Title</th><th>Cost</th><th>Priority</th><th>Created</th></tr>
+        ${tasks.map(t => {
+          const cost = workerCostMap[t.target_node + ':' + t.target_worker] ?? '?';
+          return `<tr>
+          <td style="font-family:monospace;font-size:12px"><a href="#" onclick="showTask('${t.id}');return false" style="color:var(--accent);text-decoration:none">${t.id}</a></td>
+          <td>${badge(t.status)}</td>
+          <td>${t.origin_node}</td>
+          <td>${t.target_node}:${t.target_worker}</td>
+          <td>${t.title || '-'}</td>
+          <td style="color:var(--yellow);font-weight:600">${cost}</td>
+          <td>${t.priority}</td>
+          <td>${ago(t.created_at)}</td>
+        </tr>`;
+        }).join('')}
+      </table>`;
+    }
+  } catch(e) {
+    document.getElementById('subtitle').textContent = 'Error: ' + e.message;
+  }
+}
+
+refresh();
+
+let _userToken = '';
+let _workerCostMap = {};
+
+async function loadUser() {
+  try {
+    const r = await fetch('/api/auth/me');
+    if (!r.ok) { window.location.href = '/login'; return; }
+    const u = await r.json();
+    _userToken = u.token;
+    document.getElementById('userEmail').textContent = u.email;
+    document.getElementById('userCredits').textContent = u.credits.toLocaleString() + ' credits';
+  } catch(e) { window.location.href = '/login'; }
+}
+loadUser();
+
+function showToken() {
+  const btn = document.getElementById('tokenBtn');
+  if (btn.textContent === 'Show Token') {
+    btn.textContent = _userToken;
+    btn.style.fontFamily = 'monospace';
+    btn.style.fontSize = '11px';
+    btn.onclick = function() { const ta=document.createElement('textarea');ta.value=_userToken;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta); btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = _userToken; }, 1000); };
+  } else if (btn.textContent !== 'Copied!') {
+    btn.textContent = 'Show Token';
+    btn.style.fontFamily = '';
+    btn.style.fontSize = '';
+    btn.onclick = showToken;
+  }
+}
+
+function openBuyModal() { document.getElementById('buyModal').classList.add('active'); }
+function closeBuyModal() { document.getElementById('buyModal').classList.remove('active'); }
+
+async function doBuy() {
+  const amount = parseInt(document.getElementById('buyAmount').value);
+  if (!amount || amount <= 0) return;
+  try {
+    const r = await fetch('/api/auth/buy-credits', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ amount })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      document.getElementById('userCredits').textContent = d.credits.toLocaleString() + ' credits';
+      closeBuyModal();
+    }
+  } catch(e) {}
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login';
+}
+</script>
+</body>
+</html>
